@@ -2,9 +2,11 @@ pipeline {
     agent any
 
     stages {
+        /*
+
         stage('Build') {
-            agent{
-                docker{
+            agent {
+                docker {
                     image 'node:18-alpine'
                     reuseNode true
                 }
@@ -20,48 +22,47 @@ pipeline {
                 '''
             }
         }
-        stage('Test'){
-            agent{
-                docker{
+        */
+
+        stage('Test') {
+            agent {
+                docker {
                     image 'node:18-alpine'
                     reuseNode true
                 }
             }
-            steps{
+
+            steps {
                 sh '''
-                echo 'Running tests...'
-                test -f build/index.html
-                npm test
+                    #test -f build/index.html
+                    npm test
                 '''
             }
         }
 
-                stage('E2E'){
-            agent{
-                docker{
+        stage('E2E') {
+            agent {
+                docker {
                     image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
                     reuseNode true
                 }
             }
-            steps{
+
+            steps {
                 sh '''
-                    npm install -g serve
+                    npm install serve
                     node_modules/.bin/serve -s build &
-                    sleep 10 
-                    npx playright test
+                    sleep 10
+                    npx playwright test --reporter=html
                 '''
             }
         }
-
-        stage('Deploy'){
-            steps{
-                echo 'Deploying...'
-            }
-        }
     }
-    post{
+
+    post {
         always {
-            junit 'test-results/junit.xml'
+            junit 'jest-results/junit.xml'
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
         }
     }
 }
