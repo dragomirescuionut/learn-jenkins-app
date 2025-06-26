@@ -2,8 +2,6 @@ pipeline {
     agent any
 
     stages {
-        /*
-
         stage('Build') {
             agent {
                 docker {
@@ -22,8 +20,6 @@ pipeline {
                 '''
             }
         }
-        */
-
         stage('Test') {
             agent {
                 docker {
@@ -40,24 +36,20 @@ pipeline {
             }
         }
 
-        stage('E2E') {
+       stage('Deploy') {
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    image 'node:18-alpine'
                     reuseNode true
                 }
             }
-
             steps {
                 sh '''
-                    npm install serve
-                    node_modules/.bin/serve -s build &
-                    sleep 10
-                    npx playwright test --reporter=html
+                   npm install netlify-cli -g
+                   netlify --version
                 '''
             }
         }
-    }
 
     post {
         always {
